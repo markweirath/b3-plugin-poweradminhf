@@ -1,0 +1,37 @@
+<configuration plugin="poweradminbfbc2">
+	<settings name="commands">
+        <set name="paversion">1</set>
+
+		<set name="pachangeteam-ct">60</set>
+		<set name="paspectate-spectate">60</set>
+		<set name="pakill-kill">60</set>
+        <set name="payell-yell">20</set>
+        <set name="paident-id">20</set>
+        <set name="panextmap-endmap">20</set>
+
+		<!-- Homefronts Autobalancer on/off switch-->
+        <set name="paautobalance-autobalance">40</set>
+
+        <!-- Poweradmins teambalancer on/off switch -->
+        <set name="pateambalance">40</set>
+		<set name="pateams-teams">20</set>
+
+		<!-- set match mode on/off. Will wait for teams leaders to type !ready
+			and then start a count down -->
+		<set name="pamatch-match">20</set>
+	</settings>
+
+	<!-- Poweradmins teambalancer -->
+    <settings name="teambalancer">
+		<!-- on/off - if 'on' the bot will switch players making teams unbalanced -->
+		<set name="enabled">off</set>
+	</settings>
+
+	<pamatch_plugins_disable>
+		<!-- The Plugins that need to be disabled during matchmode -->
+		<plugin>spree</plugin>
+		<plugin>adv</plugin>
+		<plugin>tk</plugin>
+		<plugin>pingwatch</plugin>
+	</pamatch_plugins_disable>
+</configuration>
