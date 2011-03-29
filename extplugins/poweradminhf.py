@@ -268,7 +268,7 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
             sclient = self._adminPlugin.findClientPrompt(input[0], client)
             if sclient:
                 try:
-                    self.console.write('admin forceteamswitch "%s"', sclient.name)
+                    self.console.write('admin forceteamswitch "%s"', % sclient.name)
                     cmd.sayLoudOrPM(client, '%s forced to swap teams' % sclient.name)
                 except Exception, err:
                     client.message('Error, server replied %s' % err)
