@@ -18,7 +18,13 @@ and functions to your b3:
 
 Added Commands:
 
-Each command (except !paversion) can be leveled in the config file.
+!payell (yell) <text> - Text displays in the MOTD area (42 chars max!)
+!paident (id) <player> - Expose a players steam ID
+!pakill (kill) <player> - Kill a player
+!paspectate (spectate) <player> - Force a player to spectate
+!pachangeteam (ct) <player> - Force a player to swap teams
+!panextmap (endmap) - End current map and move to the next one in rotation
+
 
 Requirements:
 ###################################################################################
