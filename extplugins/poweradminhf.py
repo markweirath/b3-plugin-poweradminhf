@@ -133,7 +133,7 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
                     _astate = 'true'
                 else:
                     _astate = 'false'
-                self.console.write('admin SetAutoBalance "%s"' % _astate)
+                self.console.write('admin SetAutoBalance %s' % _astate)
         if not data:
             client.message('missing parameter, try !help paautobalance')
             return False
@@ -435,48 +435,48 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
                 
                 
     def teambalance(self):
-        if self._enableTeamBalancer:
-            # get teams
-            team1players, team2players = self.getTeams()
-            
-            # if teams are uneven by one or even, then stop here
-            gap = abs(len(team1players) - len(team2players))
-            if gap <= 1:
-                self.verbose('Teambalance: Teams are balanced, T1: %s, T2: %s (diff: %s)' %(len(team1players), len(team2players), gap))
-                return
-            
-            howManyMustSwitch = int(gap / 2)
-            bigTeam = b3.TEAM_RED
-            smallTeam = b3.TEAM_BLUE
-            if len(team2players) > len(team1players):
-                bigTeam = b3.TEAM_BLUE
-                smallTeam = b3.TEAM_RED
-                
-            self.verbose('Teambalance: Teams are NOT balanced, T1: %s, T2: %s (diff: %s)' %(len(team1players), len(team2players), gap))
-            self.console.saybig('Autobalancing Teams!')
+#        if self._enableTeamBalancer:
+        # get teams
+        team1players, team2players = self.getTeams()
 
-            ## we need to change team for howManyMustSwitch players from bigteam
-            playerTeamTimes = {}
-            clients = self.console.clients.getList()
-            for c in clients:
-                if c.team == bigTeam:
-                    teamTimeVar = c.isvar(self, 'teamtime')
-                    if not teamTimeVar:
-                        self.debug('client has no variable teamtime')
-                        c.setvar(self, 'teamtime', self.console.time())
-                        self.verbose('Client variable teamtime set to: %s' % c.var(self, 'teamtime').value)
-                    playerTeamTimes[c.cid] = teamTimeVar.value
-            
-            self.debug('playerTeamTimes: %s' % playerTeamTimes)
-            sortedPlayersTeamTimes = sorted(playerTeamTimes.iteritems(), key=lambda (k,v):(v,k))
-            self.debug('sortedPlayersTeamTimes: %s' % sortedPlayersTeamTimes)
+        # if teams are uneven by one or even, then stop here
+        gap = abs(len(team1players) - len(team2players))
+        if gap <= 1:
+            self.verbose('Teambalance: Teams are balanced, T1: %s, T2: %s (diff: %s)' %(len(team1players), len(team2players), gap))
+            return
 
-            for c, teamtime in sortedPlayersTeamTimes[:howManyMustSwitch]:
-                try:
-                    self.debug('forcing %s to the other team' % c.name)
-                    self.console.write('admin forceteamswitch "%s"', c.name)
-                except Exception, err:
-                    self.error(err)
+        howManyMustSwitch = int(gap / 2)
+        bigTeam = b3.TEAM_RED
+        smallTeam = b3.TEAM_BLUE
+        if len(team2players) > len(team1players):
+            bigTeam = b3.TEAM_BLUE
+            smallTeam = b3.TEAM_RED
+
+        self.verbose('Teambalance: Teams are NOT balanced, T1: %s, T2: %s (diff: %s)' %(len(team1players), len(team2players), gap))
+        self.console.saybig('Autobalancing Teams!')
+
+        ## we need to change team for howManyMustSwitch players from bigteam
+        playerTeamTimes = {}
+        clients = self.console.clients.getList()
+        for c in clients:
+            if c.team == bigTeam:
+                teamTimeVar = c.isvar(self, 'teamtime')
+                if not teamTimeVar:
+                    self.debug('client has no variable teamtime')
+                    c.setvar(self, 'teamtime', self.console.time())
+                    self.verbose('Client variable teamtime set to: %s' % c.var(self, 'teamtime').value)
+                playerTeamTimes[c.cid] = teamTimeVar.value
+
+        self.debug('playerTeamTimes: %s' % playerTeamTimes)
+        sortedPlayersTeamTimes = sorted(playerTeamTimes.iteritems(), key=lambda (k,v):(v,k))
+        self.debug('sortedPlayersTeamTimes: %s' % sortedPlayersTeamTimes)
+
+        for c, teamtime in sortedPlayersTeamTimes[:howManyMustSwitch]:
+            try:
+                self.debug('forcing %s to the other team' % c.name)
+                self.console.write('admin forceteamswitch "%s"', c.cid)
+            except Exception, err:
+                self.error(err)
                 
                     
     def getTeams(self):
@@ -486,9 +486,9 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
         clients = self.console.clients.getList()
         for c in clients:
             if c.team == b3.TEAM_RED:
-                team1players.append(c.name)
+                team1players.append(c.cid)
             elif c.team == b3.TEAM_BLUE:
-                team2players.append(c.name)
+                team2players.append(c.cid)
         return team1players, team2players
 
 
