@@ -20,7 +20,7 @@
 # CHANGELOG :
 #
 
-__version__ = '0.1.'
+__version__ = '0.1.1'
 __author__  = 'xlr8or'
 
 import b3
@@ -429,13 +429,12 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
                 self.debug('%s has contributed to unbalance the teams')
                 client.message('do not make teams unbalanced')
                 try:
-                    self.console.write('admin forceteamswitch "%s"', client.name)
+                    self.console.write('admin forceteamswitch "%s"' % client.name)
                 except Exception, err:
                     self.warning('Error, server replied %s' % err)
                 
                 
     def teambalance(self):
-#        if self._enableTeamBalancer:
         # get teams
         team1players, team2players = self.getTeams()
 
@@ -460,16 +459,16 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
         clients = self.console.clients.getList()
         for c in clients:
             if c.team == bigTeam:
-                playerTeamTimes[c] = c.var(self, 'teamtime', self.console.time()).value
+                playerTeamTimes[c.cid] = c.var(self, 'teamtime', self.console.time()).value
 
         self.debug('playerTeamTimes: %s' % playerTeamTimes)
-        sortedPlayersTeamTimes = sorted(playerTeamTimes.iteritems(), key=lambda (k,v):(v,k))
+        sortedPlayersTeamTimes = sorted(playerTeamTimes.iteritems(), key=lambda (k,v):(v,k), reverse=True)
         self.debug('sortedPlayersTeamTimes: %s' % sortedPlayersTeamTimes)
 
         for c, teamtime in sortedPlayersTeamTimes[:howManyMustSwitch]:
             try:
-                self.debug('forcing %s to the other team' % c.name)
-                self.console.write('admin forceteamswitch "%s"', c.cid)
+                self.debug('forcing %s to the other team' % c)
+                self.console.write('admin forceteamswitch "%s"' % c)
             except Exception, err:
                 self.error(err)
                 
