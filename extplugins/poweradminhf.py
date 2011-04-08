@@ -460,12 +460,7 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
         clients = self.console.clients.getList()
         for c in clients:
             if c.team == bigTeam:
-                teamTimeVar = c.isvar(self, 'teamtime')
-                if not teamTimeVar:
-                    self.debug('client has no variable teamtime')
-                    c.setvar(self, 'teamtime', self.console.time())
-                    self.verbose('Client variable teamtime set to: %s' % c.var(self, 'teamtime').value)
-                playerTeamTimes[c.cid] = teamTimeVar.value
+                playerTeamTimes[c] = c.var(self, 'teamtime', self.console.time()).value
 
         self.debug('playerTeamTimes: %s' % playerTeamTimes)
         sortedPlayersTeamTimes = sorted(playerTeamTimes.iteritems(), key=lambda (k,v):(v,k))
