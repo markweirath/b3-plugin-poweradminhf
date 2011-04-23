@@ -49,7 +49,7 @@ for they will not function under a different name.
 3. Open your B3.xml file (in b3/conf) and add the next line in the
 <plugins> section of the file:
 
-<plugin name="poweradminhf" config="@b3/extplugins/conf/poweradminbfbc2.xml"/>
+<plugin name="poweradminhf" config="@b3/extplugins/conf/poweradminhf.xml"/>
 
 
 Changelog

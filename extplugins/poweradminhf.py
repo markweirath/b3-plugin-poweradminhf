@@ -202,7 +202,7 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
         
     def cmd_paversion(self, data, client, cmd=None):
         """\
-        This command identifies PowerAdminBFBC2 version and creator.
+        This command identifies PowerAdminHF version and creator.
         """
         #client.message(message)
         cmd.sayLoudOrPM(client, 'I am PowerAdminHF version %s by %s' % (__version__, __author__))
@@ -537,7 +537,7 @@ class MatchManager:
             pass
     
     def yellToClient(self, message, duration, client):
-        """We need this to bypass the message queue managed by the BFBC2 parser"""
+        """We need this to bypass the message queue managed by the HF parser"""
         self.console.write(('admin.yell', message, duration, 'player', client.cid))
 
     def _checkIfEveryoneIsReady(self):
@@ -618,7 +618,7 @@ if __name__ == '__main__':
     from b3.config import XmlConfigParser
     conf = XmlConfigParser()
     conf.setXml("""
-    <configuration plugin="poweradminbfbc2">
+    <configuration plugin="poweradminhf">
         <settings name="commands">
             <set name="paversion">1</set>
 
@@ -659,7 +659,7 @@ if __name__ == '__main__':
 
     
     ## create an instance of the plugin to test
-    p = Poweradminbfbc2Plugin(fakeConsole, conf)
+    p = PoweradminhfPlugin(fakeConsole, conf)
     p.onStartup()
 
     joe.connects('Joe')
