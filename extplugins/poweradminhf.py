@@ -20,8 +20,11 @@
 # CHANGELOG :
 # 2011-05-22 - 0.2 -Courgette
 # * add call vote protector for teaching noobs not to call kick/ban agains admins
+# 2011-05-22 - 0.2.1 -Courgette
+# * fix vote retaliation system for ban 
+# * do not tempban ppl calling votes against superadmin but just issue a warning
 #
-__version__ = '0.2'
+__version__ = '0.2.1'
 __author__  = 'xlr8or, Courgette'
 
 import b3
@@ -453,22 +456,19 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
                     self.warning('Error, server replied %s' % err)
              
     def onVoteStart(self, event):
+        self.debug("onVoteStart (%r, %s, %s)" % (event.data, event.client, event.target))
         self._currentVote = event
-        if event.data.lower() in ('kick', 'kickban') and event.client \
+        if event.data.lower() in ('kick', 'ban') and event.client \
             and event.target and event.target.maxLevel >= self._auto_unban_level \
             and event.target.maxLevel > event.client.maxLevel:
-                if event.target.maxLevel == 100:
-                    ## voting ban against superadmin is bad
-                    duration = self._adminPlugin.config.getDuration('settings', 'ban_duration')
-                    event.client.tempban(duration=duration, reason="do not call vote against admin")
-                else:
-                    event.client.warn(duration="2d", warning="do not call vote against admin", keyword="STUPID_VOTE")
+                self._adminPlugin.penalizeClient('warning', event.client, duration="2d", reason="do not call vote against admin")
             
     def onVoteEnd(self, event):
         """
         {'yesvotes': 8, 'percentfor': 0.8, 'voteresult': failed/passed}
         """
-        if self._currentVote.data.lower() == 'kickban' and event.data['voteresult'].lower() == "passed":
+        self.debug("onVoteEnd (%r, %s, %s)" % (event.data, event.client, event.target))
+        if self._currentVote.data.lower() == 'ban' and event.data['voteresult'].lower() == "passed":
             votecaller = self._currentVote.client
             votetarget = self._currentVote.target
             if votecaller and votetarget:
@@ -666,7 +666,7 @@ if __name__ == '__main__':
     
     def callBanVote(self, target):
         print "\n%s calls a ban vote against %s" % (self.name, target.name)
-        self.console.queueEvent(b3.events.Event(b3.events.EVT_CLIENT_VOTE_START, data="KickBan", client=self, target=target))
+        self.console.queueEvent(b3.events.Event(b3.events.EVT_CLIENT_VOTE_START, data="ban", client=self, target=target))
     FakeClient.callBanVote = callBanVote
     
     def callKickVote(self, target):
