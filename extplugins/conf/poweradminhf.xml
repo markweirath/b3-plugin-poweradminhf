@@ -1,4 +1,4 @@
-<configuration plugin="poweradminbfbc2">
+<configuration plugin="poweradminhf">
 	<settings name="commands">
         <set name="paversion">1</set>
 
