@@ -18,10 +18,11 @@
 #
 #
 # CHANGELOG :
+# 2011-05-22 - 0.2 -Courgette
+# * add call vote protector for teaching noobs not to call kick/ban agains admins
 #
-
-__version__ = '0.1.1'
-__author__  = 'xlr8or'
+__version__ = '0.2'
+__author__  = 'xlr8or, Courgette'
 
 import b3
 import b3.events
@@ -38,6 +39,9 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
     _matchManager = None
     
     _ignoreBalancingTill = 0
+    
+    _currentVote = None
+    _auto_unban_level = None
     
     def startup(self):
         """\
@@ -72,6 +76,8 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
         self.registerEvent(b3.events.EVT_CLIENT_TEAM_CHANGE)
         self.registerEvent(b3.events.EVT_GAME_ROUND_START)
         self.registerEvent(b3.events.EVT_CLIENT_AUTH)
+        self.registerEvent(b3.events.EVT_CLIENT_VOTE_START)
+        self.registerEvent(b3.events.EVT_SERVER_VOTE_END)
         self.debug('Started')
 
 
@@ -87,6 +93,7 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
     def onLoadConfig(self):
         self.LoadTeamBalancer()
         self.LoadMatchMode()
+        self.LoadVoteProtector()
 
     def LoadTeamBalancer(self):
         # TEAMBALANCER SETUP
@@ -106,6 +113,14 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
                 self._match_plugin_disable.append(e.text)
         except:
             self.debug('Can\'t setup pamatch disable plugins because there is no plugins set in config')
+      
+    def LoadVoteProtector(self):
+        try:
+            self._auto_unban_level = self.config.getint('voteprotector','auto_unban_level')
+        except Exception, err:
+            self._auto_unban_level = 20
+            self.warning('can\'t read auto_unban_level from config. Using default (%s)' % err)
+        self.debug('voteprotector/auto_unban_level : %s' % self._auto_unban_level)
 
 
 ##################################################################################################
@@ -121,6 +136,10 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
             self._ignoreBalancingTill = self.console.time() + 60
         elif event.type == b3.events.EVT_CLIENT_AUTH:
             self.onClientAuth(event.data, event.client)
+        elif event.type == b3.events.EVT_CLIENT_VOTE_START:
+            self.onVoteStart(event)
+        elif event.type == b3.events.EVT_SERVER_VOTE_END:
+            self.onVoteEnd(event)
 
 
     def cmd_paautobalance(self, data, client=None, cmd=None):
@@ -432,7 +451,35 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
                     self.console.write('admin forceteamswitch "%s"' % client.name)
                 except Exception, err:
                     self.warning('Error, server replied %s' % err)
-                
+             
+    def onVoteStart(self, event):
+        self._currentVote = event
+        if event.data.lower() in ('kick', 'kickban') and event.client \
+            and event.target and event.target.maxLevel >= self._auto_unban_level \
+            and event.target.maxLevel > event.client.maxLevel:
+                if event.target.maxLevel == 100:
+                    ## voting ban against superadmin is bad
+                    duration = self._adminPlugin.config.getDuration('settings', 'ban_duration')
+                    event.client.tempban(duration=duration, reason="do not call vote against admin")
+                else:
+                    event.client.warn(duration="2d", warning="do not call vote against admin", keyword="STUPID_VOTE")
+            
+    def onVoteEnd(self, event):
+        """
+        {'yesvotes': 8, 'percentfor': 0.8, 'voteresult': failed/passed}
+        """
+        if self._currentVote.data.lower() == 'kickban' and event.data['voteresult'].lower() == "passed":
+            votecaller = self._currentVote.client
+            votetarget = self._currentVote.target
+            if votecaller and votetarget:
+                if votetarget.maxLevel < self._auto_unban_level:
+                    self.info("%s (%s) is in a lower group than %s, vote allowed", votetarget, votetarget.maxLevel, self._auto_unban_level)
+                elif votecaller.maxLevel > votetarget.maxLevel:
+                    self.info("%s (%s) is in a higher group than %s (%s), vote allowed", votecaller, votecaller.maxLevel, votetarget, votetarget.maxLevel)
+                else:
+                    self.info("%s (%s) cannot vote ban %s (%s), vote cancelled", votecaller, votecaller.maxLevel, votetarget, votetarget.maxLevel)
+                    votetarget.unban(reason="stupid vote auto unbanner", silent=True)
+   
                 
     def teambalance(self):
         # get teams
@@ -610,9 +657,23 @@ class MatchManager:
 if __name__ == '__main__':
     import time
     
-    from b3.fake import fakeConsole
+    from b3.fake import fakeConsole, FakeClient
     fakeConsole.gameName = 'homefront'
 
+    fakeConsole.Events.createEvent('EVT_CLIENT_VOTE_START', 'Client Vote Start')
+    fakeConsole.Events.createEvent('EVT_CLIENT_VOTE', 'Client Vote')
+    fakeConsole.Events.createEvent('EVT_SERVER_VOTE_END', 'Server Vote End')
+    
+    def callBanVote(self, target):
+        print "\n%s calls a ban vote against %s" % (self.name, target.name)
+        self.console.queueEvent(b3.events.Event(b3.events.EVT_CLIENT_VOTE_START, data="KickBan", client=self, target=target))
+    FakeClient.callBanVote = callBanVote
+    
+    def callKickVote(self, target):
+        print "\n%s calls a kick vote against %s" % (self.name, target.name)
+        self.console.queueEvent(b3.events.Event(b3.events.EVT_CLIENT_VOTE_START, data="Kick", client=self, target=target))
+    FakeClient.callKickVote = callKickVote
+    
     from b3.fake import joe, simon, moderator, superadmin
             
     from b3.config import XmlConfigParser
@@ -645,6 +706,13 @@ if __name__ == '__main__':
         <settings name="teambalancer">
             <!-- on/off - if 'on' the bot will switch players making teams unbalanced -->
             <set name="enabled">off</set>
+        </settings>
+
+        <!-- Stupid vote protector -->
+        <settings name="voteprotector">
+            <!-- if an admin above auto_unban_level is banned by vote from a
+            player of lower level, then he will be automatically unbanned -->
+            <set name="auto_unban_level">40</set>
         </settings>
 
         <pamatch_plugins_disable>
@@ -795,5 +863,34 @@ if __name__ == '__main__':
         superadmin.says('!conq')
         superadmin.says('!pasqrush')
         superadmin.says('!sqru')
+    
+    def testAutoUnban():
+        print('-'*40)
+        joe.callBanVote(moderator)
+        time.sleep(1)
+        fakeConsole.queueEvent(fakeConsole.getEvent('EVT_SERVER_VOTE_END',data={'yesvotes': 2, 'percentfor': 1.0, 'voteresult': 'Passed'}))
+        time.sleep(2)
         
-    testMatch6()
+        p._auto_unban_level = 2
+        print('-'*40)
+        joe.callBanVote(moderator)
+        time.sleep(1)
+        fakeConsole.queueEvent(fakeConsole.getEvent('EVT_SERVER_VOTE_END',data={'yesvotes': 2, 'percentfor': 1.0, 'voteresult': 'Passed'}))
+        time.sleep(2)
+        
+        
+        print('-'*40)
+        joe.callKickVote(moderator)
+        time.sleep(1)
+        fakeConsole.queueEvent(fakeConsole.getEvent('EVT_SERVER_VOTE_END',data={'yesvotes': 2, 'percentfor': 1.0, 'voteresult': 'Passed'}))
+        time.sleep(2)
+        
+        print('-'*40)
+        superadmin.connects("god")
+        joe.callBanVote(superadmin)
+        time.sleep(1)
+        fakeConsole.queueEvent(fakeConsole.getEvent('EVT_SERVER_VOTE_END',data={'yesvotes': 2, 'percentfor': 1.0, 'voteresult': 'Passed'}))
+        time.sleep(2)
+        
+    #testMatch6()
+    testAutoUnban()

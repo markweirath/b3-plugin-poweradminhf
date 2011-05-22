@@ -1,19 +1,19 @@
 <configuration plugin="poweradminhf">
 	<settings name="commands">
-        <set name="paversion">1</set>
+		<set name="paversion">1</set>
 
 		<set name="pachangeteam-ct">60</set>
 		<set name="paspectate-spectate">60</set>
 		<set name="pakill-kill">60</set>
-        <set name="payell-yell">20</set>
-        <set name="paident-id">20</set>
-        <set name="panextmap-endmap">20</set>
+		<set name="payell-yell">20</set>
+		<set name="paident-id">20</set>
+		<set name="panextmap-endmap">20</set>
 
 		<!-- Homefronts Autobalancer on/off switch-->
-        <set name="paautobalance-autobalance">40</set>
+		<set name="paautobalance-autobalance">40</set>
 
-        <!-- Poweradmins teambalancer on/off switch -->
-        <set name="pateambalance">40</set>
+		<!-- Poweradmins teambalancer on/off switch -->
+		<set name="pateambalance">40</set>
 		<set name="pateams-teams">20</set>
 
 		<!-- set match mode on/off. Will wait for teams leaders to type !ready
@@ -22,9 +22,17 @@
 	</settings>
 
 	<!-- Poweradmins teambalancer -->
-    <settings name="teambalancer">
+	<settings name="teambalancer">
 		<!-- on/off - if 'on' the bot will switch players making teams unbalanced -->
 		<set name="enabled">off</set>
+	</settings>
+
+
+	<!-- Stupid vote protector -->
+	<settings name="voteprotector">
+		<!-- if an admin above auto_unban_level is banned by vote from a
+		player of lower level, then he will be automatically unbanned -->
+		<set name="auto_unban_level">20</set>
 	</settings>
 
 	<pamatch_plugins_disable>
