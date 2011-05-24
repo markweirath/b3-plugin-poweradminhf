@@ -23,8 +23,10 @@
 # 2011-05-22 - 0.2.1 -Courgette
 # * fix vote retaliation system for ban 
 # * do not tempban ppl calling votes against superadmin but just issue a warning
+# 2011-05-24 - 0.2.2 - Courgette
+# * reflect rcon command changes (use of SteamID instead of player name)
 #
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 __author__  = 'xlr8or, Courgette'
 
 import b3
@@ -271,7 +273,7 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
                 if sclient:
                     self.console.saybig('%s was terminated by server admin' % sclient.name)
                     try:
-                        self.console.write(('admin kill "%s"' % sclient.name))
+                        self.console.write(('admin kill "%s"' % sclient.guid))
                         if reason:
                             self.console.say('%s was terminated by server admin for : %s' % (sclient.name, reason))
                     except Exception, err:
@@ -290,7 +292,7 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
             sclient = self._adminPlugin.findClientPrompt(input[0], client)
             if sclient:
                 try:
-                    self.console.write('admin forceteamswitch "%s"' % sclient.name)
+                    self.console.write('admin forceteamswitch "%s"' % sclient.guid)
                     cmd.sayLoudOrPM(client, '%s forced to swap teams' % sclient.name)
                 except Exception, err:
                     client.message('Error, server replied %s' % err)
@@ -308,7 +310,7 @@ class PoweradminhfPlugin(b3.plugin.Plugin):
             sclient = self._adminPlugin.findClientPrompt(input[0], client)
             if sclient:
                 try:
-                    self.console.write('admin makespectate "%s"' % sclient.name )
+                    self.console.write('admin makespectate "%s"' % sclient.guid )
                     cmd.sayLoudOrPM(client, '%s forced to spectate' % sclient.name)
                 except Exception, err:
                     client.message('Error, server replied %s' % err)
